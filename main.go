@@ -1,7 +1,8 @@
 package main
 
 import (
-	"archive/zip"
+	"archive/tar"
+	"compress/gzip"
 	"fmt"
 	"io"
 	"os"
@@ -10,44 +11,52 @@ import (
 )
 
 func main() {
-  // Folder to scan
-	sourceDir := "./logs"
-	// Where to save the zip
-  archiveDir := "./archive"
-    // Filter for files older than this
-	daysOld := 3
+	// 1. Validate Command Line Argument
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: log-archive <log-directory>")
+		return
+	}
+	logDir := os.Args[1]
 
-	// 1. Create archive directory if it doesn't exist
-	os.MkdirAll(archiveDir, 0755)
+	// 2. Generate Timestamped Filename
+	timestamp := time.Now().Format("20060102_150405")
+	archiveName := fmt.Sprintf("logs_archive_%s.tar.gz", timestamp)
 
-	// 2. Setup the zip file
-	zipName := fmt.Sprintf("logs_%s.zip", time.Now().Format("2006-01-02"))
-	zipPath := filepath.Join(archiveDir, zipName)
-	zipFile, _ := os.Create(zipPath)
-	defer zipFile.Close()
+	// 3. Create the .tar.gz file
+	out, err := os.Create(archiveName)
+	if err != nil {
+		fmt.Printf("Error creating archive: %v\n", err)
+		return
+	}
+	defer out.Close()
 
-	zipWriter := zip.NewWriter(zipFile)
-	defer zipWriter.Close()
+	// Setup compression layers
+	gw := gzip.NewWriter(out)
+	defer gw.Close()
+	tw := tar.NewWriter(gw)
+	defer tw.Close()
 
-	// 3. Scan the logs folder
-	filepath.Walk(sourceDir, func(path string, info os.FileInfo, err error) error {
+	// 4. Walk the directory and add files to archive
+	filepath.Walk(logDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() { return nil }
 
-		// Check if it's a .log file and older than X days
-		if filepath.Ext(path) == ".log" && time.Since(info.ModTime()).Hours() > float64(daysOld*24) {
-			fmt.Printf("Archiving: %s\n", info.Name())
+		// Create tar header
+		header, _ := tar.FileInfoHeader(info, "")
+		header.Name = filepath.Base(path)
+		tw.WriteHeader(header)
 
-			// Add to zip
-			f, _ := os.Open(path)
-			defer f.Close()
-			w, _ := zipWriter.Create(info.Name())
-			io.Copy(w, f)
-
-			// 4. Delete the original file
-			os.Remove(path)
-		}
+		// Copy file content into tar
+		file, _ := os.Open(path)
+		defer file.Close()
+		io.Copy(tw, file)
 		return nil
 	})
 
-	fmt.Println("Done! Check the archive folder.")
+	// 5. Log the action to a text file
+	logEntry := fmt.Sprintf("[%s] Archived %s to %s\n", time.Now().Format(time.RFC3339), logDir, archiveName)
+	f, _ := os.OpenFile("archive_log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	defer f.Close()
+	f.WriteString(logEntry)
+
+	fmt.Printf("Successfully created %s\n", archiveName)
 }
