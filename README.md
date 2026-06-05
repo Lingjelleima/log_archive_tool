@@ -1,39 +1,29 @@
-Go Log Archiver
+# Log Archive Tool
 
-This project is a utility built for learning Go (Golang) with a focus on DevOps automation. It automates the process of managing old log files to save disk space.
+This is a CLI tool built in Go for archiving logs. It is a project designed to practice Golang for DevOps automation.
 
-Functionality
-- Scans a target directory for .log files.
-- Filters files based on a specific age (e.g., older than 3 days).
-- Compresses identified files into a single ZIP archive.
-- Deletes the original log files after successful archival.
+# Functionality
+- Accepts a directory path as a command-line argument.
+- Compresses all files in the directory into a `.tar.gz` archive.
+- Names archives with a unique timestamp (`logs_archive_YYYYMMDD_HHMMSS.tar.gz`).
+- Records an audit log of every archival action in `archive_log.txt`.
 
-Prerequisites
-- Go 1.20 or later installed on your system.
+# Prerequisites
+- Go 1.20 or later.
 
-Installation
-1. Clone this repository:
+# Installation & Setup
+1. Clone the repository:
    git clone https://github.com
+   cd log-archive-tool
 
-2. Navigate to the project directory:
-   cd log-archiver
+2. Build the binary:
+   go build -o log-archive
 
-Usage
-1. Place log files in the /logs directory.
-2. Run the script using the Go toolchain:
-   go run main.go
+# Usage
+Run the tool by providing the path to the logs directory:
+./log-archive /path/to/logs
 
-Configuration
-The following variables can be modified in main.go to fit your environment:
-- sourceDir: The directory to scan for logs.
-- archiveDir: The directory where ZIP files will be stored.
-- daysOld: The age threshold for archiving files.
-
-Building the Binary
-To create a standalone executable for deployment:
-go build -o log-archiver
+# License
+MIT License
 
 https://roadmap.sh/projects/log-archive-tool
-
-License
-MIT License
