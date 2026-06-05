@@ -33,5 +33,7 @@ Building the Binary
 To create a standalone executable for deployment:
 go build -o log-archiver
 
+https://roadmap.sh/projects/log-archive-tool
+
 License
 MIT License
