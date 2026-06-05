@@ -56,7 +56,7 @@ func main(){
 			return err
 		}
 		
-		header.Name = filepath.Base(path)
+		header.Name = filepath.Rel(path)
 
 		if err := tw.WriteHeader(header);err!=nil {
 			return err
@@ -69,7 +69,7 @@ func main(){
 			return err
 		}
 		
-		defer file.Close()
+		file.Close()
 		
 		_,err=io.Copy(tw, file)
 		return err	
