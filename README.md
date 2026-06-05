@@ -5,7 +5,7 @@ This is a CLI tool built in Go for archiving logs. It is a project designed to p
 # Functionality
 - Accepts a directory path as a command-line argument.
 - Compresses all files in the directory into a `.tar.gz` archive.
-- Names archives with a unique timestamp (`logs_archive_YYYYMMDD_HHMMSS.tar.gz`).
+- Names archives with a unique timestamp (`logs_archive_YYYYMMDD.tar.gz`).
 - Records an audit log of every archival action in `archive_log.txt`.
 
 # Prerequisites
